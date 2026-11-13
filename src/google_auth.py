@@ -14,4 +14,7 @@ def get_credentials():
     if raw:
         return Credentials.from_service_account_info(json.loads(raw), scopes=SCOPES)
     path = os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE", "applicant-scoring-pipeline.json")
+    if not os.path.exists(path):
+        raise RuntimeError("No Google credentials: GOOGLE_SERVICE_ACCOUNT_JSON is empty/unset "
+                           f"and file '{path}' does not exist. Check the GitHub Actions secret.")
     return Credentials.from_service_account_file(path, scopes=SCOPES)
