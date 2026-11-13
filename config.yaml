@@ -1,0 +1,104 @@
+sheet:
+  url: "<google_sheet_url>"        # or set GOOGLE_SHEET_ID in env
+  worksheet: null                  # null = first tab
+  columns:
+    name: "Name"
+    email: "Email"
+    role: "Role"
+    cv_link: "CV Link"
+
+coda:
+  doc_id: "<coda_doc_id>"          # env CODA_DOC_ID / CODA_TABLE_ID override these
+  table_id: "<coda_table_id>"
+  # Coda column names (left = internal key, right = column title in your table)
+  columns:
+    applicant_id: "Applicant ID"
+    name: "Name"
+    email: "Email"
+    role: "Role"
+    cv_link: "CV Link"
+    total_score: "Total Score"
+    sub_scores: "Sub-scores"
+    recommendation: "Recommendation"
+    reason: "Reason"
+    date: "Date"
+    status: "Status"
+    error_note: "Error Note"
+    cv_hash: "CV Hash"             # optional: used only if this column exists in the table
+
+llm:
+  model: "openai/gpt-oss-120b"   # llama-3.3-70b-versatile is not available on this Groq account
+  temperature: 0.2
+
+min_cv_chars: 80                   # extracted text shorter than this => Failed
+
+thresholds:
+  shortlist_min: 80
+  maybe_min: 55   # below this -> Reject
+
+roles:
+  "Automation Intern":
+    weights: {skills: 0.3, education: 0.15, experience: 0.3, projects: 0.25}
+    criteria:
+      - "Experience with workflow automation and process optimization"
+      - "Skills match: Python, REST APIs, webhooks, automation tools (n8n, Zapier, Make)"
+      - "Ability to integrate third-party services and handle data efficiently"
+      - "Problem-solving skills and evidence of automating repetitive tasks"
+      - "Clarity of writing and documentation in the CV"
+      - "Grammar and spelling quality"
+
+  "Backend Intern":
+    weights: {skills: 0.3, education: 0.15, experience: 0.35, projects: 0.2}
+    criteria:
+      - "Relevant backend development experience through internships or projects"
+      - "Skills match: Python, Java, Node.js, REST APIs, SQL/NoSQL databases"
+      - "Understanding of authentication, authorization and API development"
+      - "Knowledge of database design, query optimization and server-side logic"
+      - "Clarity of writing and documentation in the CV"
+      - "Grammar and spelling quality"
+
+  "Data Analyst Intern":
+    weights: {skills: 0.35, education: 0.15, experience: 0.3, projects: 0.2}
+    criteria:
+      - "Skills match: SQL, Python, Excel, Power BI, Tableau"
+      - "Knowledge of data cleaning, preprocessing and exploratory data analysis"
+      - "Understanding of statistics and analytical techniques"
+      - "Experience with data visualization and dashboard development"
+      - "Projects demonstrating data analysis and actionable insights"
+      - "Ability to communicate findings through clear reports and documentation"
+      - "Grammar and spelling quality"
+
+  "Machine Learning Intern":
+    aliases: ["ML Intern"]
+    weights: {skills: 0.35, education: 0.15, experience: 0.25, projects: 0.25}
+    criteria:
+      - "Skills match: Python, NumPy, Pandas, Scikit-learn, TensorFlow or PyTorch"
+      - "Understanding of supervised and unsupervised machine learning algorithms"
+      - "Knowledge of statistics, probability and model evaluation metrics"
+      - "Experience with data preprocessing, feature engineering and model training"
+      - "Projects demonstrating practical machine learning implementation"
+      - "Understanding of model deployment and API integration"
+      - "Grammar and spelling quality"
+
+  "Full Stack Developer Intern":
+    aliases: ["Full Stack Intern"]
+    weights: {skills: 0.35, education: 0.1, experience: 0.3, projects: 0.25}
+    criteria:
+      - "Skills match: HTML, CSS, JavaScript, React.js and Node.js"
+      - "Knowledge of REST APIs and frontend-backend integration"
+      - "Database experience with MongoDB, MySQL or PostgreSQL"
+      - "Understanding of authentication, authorization and application security"
+      - "Experience building responsive and functional web applications"
+      - "Projects demonstrating end-to-end full stack development"
+      - "Grammar and spelling quality"
+
+prompt_template: |
+  You are screening a CV for the role of {role}.
+  Score each of skills, education, experience and projects from 0 to 100 against these criteria:
+  {criteria}
+  Relative importance (weights): {weights}
+  The CV may be in any language: score it in its own context and, if the language made
+  scoring harder, mention that in "reason". Do not refuse because of language.
+  Return strict JSON only (no prose, no markdown), matching this schema: {schema}
+  CV text:
+  {cv_text}

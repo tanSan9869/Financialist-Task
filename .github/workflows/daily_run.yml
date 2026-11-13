@@ -1,0 +1,26 @@
+name: Daily applicant scoring
+on:
+  schedule:
+    - cron: "0 7 * * *"   # 07:00 UTC daily
+  workflow_dispatch: {}    # manual trigger for demo / live change
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: System deps (OCR + legacy .doc)
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr poppler-utils libreoffice-writer
+      - run: pip install -r requirements.txt
+      - run: python run.py
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          CODA_API_TOKEN: ${{ secrets.CODA_API_TOKEN }}
+          CODA_DOC_ID: ${{ secrets.CODA_DOC_ID }}
+          CODA_TABLE_ID: ${{ secrets.CODA_TABLE_ID }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: run-logs, path: logs/ }

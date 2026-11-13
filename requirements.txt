@@ -1,0 +1,12 @@
+gspread
+google-auth
+google-api-python-client
+requests
+groq
+pdfplumber
+python-docx
+pytesseract
+pdf2image
+Pillow
+pyyaml
+python-dotenv
