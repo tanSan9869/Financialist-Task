@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 780" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#374151"/>
+    </marker>
+    <marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/>
+    </marker>
+  </defs>
+  <rect width="1100" height="780" fill="#ffffff"/>
+
+  <text x="550" y="40" text-anchor="middle" font-size="24" font-weight="700" fill="#111827">Daily Applicant Scoring Pipeline: Architecture</text>
+  <text x="550" y="64" text-anchor="middle" font-size="13" fill="#6b7280">Google Sheet to AI scoring to Coda, once a day, no duplicates, bad CVs never stop the run</text>
+
+  <!-- Row 1: trigger / orchestrator / source -->
+  <rect x="40" y="100" width="230" height="86" rx="10" fill="#e0e7ff" stroke="#4338ca" stroke-width="2"/>
+  <text x="155" y="132" text-anchor="middle" font-size="16" font-weight="700" fill="#1e1b4b">GitHub Actions</text>
+  <text x="155" y="154" text-anchor="middle" font-size="12" fill="#312e81">daily cron + manual "Run workflow"</text>
+  <text x="155" y="172" text-anchor="middle" font-size="12" fill="#312e81">secrets: Groq, Coda, Google</text>
+
+  <rect x="350" y="100" width="260" height="86" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+  <text x="480" y="132" text-anchor="middle" font-size="16" font-weight="700" fill="#78350f">run.py (orchestrator)</text>
+  <text x="480" y="154" text-anchor="middle" font-size="12" fill="#78350f">loops over every applicant row</text>
+  <text x="480" y="172" text-anchor="middle" font-size="12" fill="#78350f">one try/except per applicant</text>
+
+  <rect x="690" y="100" width="190" height="86" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+  <text x="785" y="132" text-anchor="middle" font-size="16" font-weight="700" fill="#14532d">Google Sheet</text>
+  <text x="785" y="154" text-anchor="middle" font-size="12" fill="#14532d">Name, Email, Role,</text>
+  <text x="785" y="172" text-anchor="middle" font-size="12" fill="#14532d">CV Link (Drive)</text>
+
+  <rect x="920" y="100" width="150" height="86" rx="10" fill="#f3f4f6" stroke="#4b5563" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="995" y="132" text-anchor="middle" font-size="16" font-weight="700" fill="#111827">config.yaml</text>
+  <text x="995" y="154" text-anchor="middle" font-size="12" fill="#374151">rubric, weights,</text>
+  <text x="995" y="172" text-anchor="middle" font-size="12" fill="#374151">thresholds, columns</text>
+
+  <line x1="270" y1="143" x2="348" y2="143" stroke="#374151" stroke-width="2" marker-end="url(#a)"/>
+  <text x="309" y="136" text-anchor="middle" font-size="11" fill="#374151">starts</text>
+  <line x1="688" y1="143" x2="612" y2="143" stroke="#374151" stroke-width="2" marker-end="url(#a)"/>
+  <text x="650" y="136" text-anchor="middle" font-size="11" fill="#374151">reads rows</text>
+  <path d="M 920 143 L 900 143 L 900 215 L 480 215 L 480 188" fill="none" stroke="#4b5563" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+  <text x="905" y="208" font-size="11" fill="#4b5563">read at start of every run</text>
+
+  <!-- Per applicant label -->
+  <rect x="30" y="238" width="1040" height="196" rx="14" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="8 5"/>
+  <text x="48" y="262" font-size="13" font-weight="700" fill="#374151">FOR EACH APPLICANT ROW (new rows only)</text>
+
+  <!-- Row 2: four steps -->
+  <rect x="50" y="280" width="210" height="130" rx="10" fill="#ffffff" stroke="#0e7490" stroke-width="2"/>
+  <text x="155" y="308" text-anchor="middle" font-size="15" font-weight="700" fill="#164e63">1. Dedup</text>
+  <text x="155" y="330" text-anchor="middle" font-size="12" fill="#164e63">dedup.py</text>
+  <text x="155" y="352" text-anchor="middle" font-size="12" fill="#164e63">ID = sha256(email)[:12]</text>
+  <text x="155" y="370" text-anchor="middle" font-size="12" fill="#164e63">skip if ID / email / CV hash</text>
+  <text x="155" y="388" text-anchor="middle" font-size="12" fill="#164e63">already in Coda</text>
+
+  <rect x="310" y="280" width="210" height="130" rx="10" fill="#ffffff" stroke="#0e7490" stroke-width="2"/>
+  <text x="415" y="308" text-anchor="middle" font-size="15" font-weight="700" fill="#164e63">2. Extract text</text>
+  <text x="415" y="330" text-anchor="middle" font-size="12" fill="#164e63">extractor.py</text>
+  <text x="415" y="352" text-anchor="middle" font-size="12" fill="#164e63">PDF, DOCX, DOC, TXT, Google Doc</text>
+  <text x="415" y="370" text-anchor="middle" font-size="12" fill="#164e63">scans / images: OCR (Tesseract)</text>
+  <text x="415" y="388" text-anchor="middle" font-size="12" fill="#164e63">never raises, returns reason</text>
+
+  <rect x="570" y="280" width="210" height="130" rx="10" fill="#ffffff" stroke="#0e7490" stroke-width="2"/>
+  <text x="675" y="308" text-anchor="middle" font-size="15" font-weight="700" fill="#164e63">3. Score</text>
+  <text x="675" y="330" text-anchor="middle" font-size="12" fill="#164e63">scorer.py</text>
+  <text x="675" y="352" text-anchor="middle" font-size="12" fill="#164e63">LLM gives 4 sub-scores (JSON)</text>
+  <text x="675" y="370" text-anchor="middle" font-size="12" fill="#164e63">total = weighted in code</text>
+  <text x="675" y="388" text-anchor="middle" font-size="12" fill="#164e63">recommendation from thresholds</text>
+
+  <rect x="830" y="280" width="210" height="130" rx="10" fill="#ffffff" stroke="#0e7490" stroke-width="2"/>
+  <text x="935" y="308" text-anchor="middle" font-size="15" font-weight="700" fill="#164e63">4. Write</text>
+  <text x="935" y="330" text-anchor="middle" font-size="12" fill="#164e63">coda_writer.py</text>
+  <text x="935" y="352" text-anchor="middle" font-size="12" fill="#164e63">upsert, key = Applicant ID</text>
+  <text x="935" y="370" text-anchor="middle" font-size="12" fill="#164e63">Status = Scored or Failed</text>
+  <text x="935" y="388" text-anchor="middle" font-size="12" fill="#164e63">+ Error Note if failed</text>
+
+  <line x1="262" y1="345" x2="308" y2="345" stroke="#374151" stroke-width="2" marker-end="url(#a)"/>
+  <text x="285" y="338" text-anchor="middle" font-size="10" fill="#374151">new</text>
+  <line x1="522" y1="345" x2="568" y2="345" stroke="#374151" stroke-width="2" marker-end="url(#a)"/>
+  <text x="545" y="338" text-anchor="middle" font-size="10" fill="#374151">text</text>
+  <line x1="782" y1="345" x2="828" y2="345" stroke="#374151" stroke-width="2" marker-end="url(#a)"/>
+  <text x="805" y="338" text-anchor="middle" font-size="10" fill="#374151">result</text>
+  <path d="M 480 188 L 480 240 L 155 240 L 155 278" fill="none" stroke="#374151" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- Row 3: external systems -->
+  <rect x="50" y="480" width="210" height="70" rx="10" fill="#fce7f3" stroke="#be185d" stroke-width="2"/>
+  <text x="155" y="508" text-anchor="middle" font-size="15" font-weight="700" fill="#831843">Coda table</text>
+  <text x="155" y="528" text-anchor="middle" font-size="12" fill="#831843">existing IDs / emails (read)</text>
+
+  <rect x="310" y="480" width="210" height="70" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+  <text x="415" y="508" text-anchor="middle" font-size="15" font-weight="700" fill="#14532d">Google Drive</text>
+  <text x="415" y="528" text-anchor="middle" font-size="12" fill="#14532d">CV file (service account)</text>
+
+  <rect x="570" y="480" width="210" height="70" rx="10" fill="#ede9fe" stroke="#6d28d9" stroke-width="2"/>
+  <text x="675" y="508" text-anchor="middle" font-size="15" font-weight="700" fill="#4c1d95">Groq LLM API</text>
+  <text x="675" y="528" text-anchor="middle" font-size="12" fill="#4c1d95">openai/gpt-oss-120b</text>
+
+  <rect x="830" y="480" width="210" height="70" rx="10" fill="#fce7f3" stroke="#be185d" stroke-width="2"/>
+  <text x="935" y="508" text-anchor="middle" font-size="15" font-weight="700" fill="#831843">Coda table</text>
+  <text x="935" y="528" text-anchor="middle" font-size="12" fill="#831843">one row per applicant (upsert)</text>
+
+  <line x1="155" y1="412" x2="155" y2="478" stroke="#374151" stroke-width="2" marker-start="url(#a)" marker-end="url(#a)"/>
+  <line x1="415" y1="412" x2="415" y2="478" stroke="#374151" stroke-width="2" marker-start="url(#a)"/>
+  <line x1="675" y1="412" x2="675" y2="478" stroke="#374151" stroke-width="2" marker-start="url(#a)" marker-end="url(#a)"/>
+  <line x1="935" y1="412" x2="935" y2="478" stroke="#374151" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- Failure path -->
+  <rect x="50" y="590" width="560" height="96" rx="10" fill="#fef2f2" stroke="#b91c1c" stroke-width="2"/>
+  <text x="330" y="618" text-anchor="middle" font-size="15" font-weight="700" fill="#7f1d1d">Failure path (corrupt / empty file, OCR failure, bad role, API error)</text>
+  <text x="330" y="642" text-anchor="middle" font-size="12" fill="#7f1d1d">Row is still written to Coda with Status = Failed + Error Note, and the run continues.</text>
+  <text x="330" y="662" text-anchor="middle" font-size="12" fill="#7f1d1d">Missing OCR tooling is logged as "Deferred" and retried on a later run.</text>
+  <path d="M 415 412 L 415 440 L 600 440 L 600 570 L 330 570 L 330 588" fill="none" stroke="#b91c1c" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#r)"/>
+
+  <rect x="660" y="590" width="380" height="96" rx="10" fill="#f3f4f6" stroke="#4b5563" stroke-width="2"/>
+  <text x="850" y="618" text-anchor="middle" font-size="15" font-weight="700" fill="#111827">Run log</text>
+  <text x="850" y="642" text-anchor="middle" font-size="12" fill="#374151">logs/run_YYYY-MM-DD.jsonl</text>
+  <text x="850" y="662" text-anchor="middle" font-size="12" fill="#374151">{timestamp, applicant_id, status, error}</text>
+  <line x1="480" y1="436" x2="480" y2="436" stroke="none"/>
+  <path d="M 935 552 L 935 570 L 850 570 L 850 588" fill="none" stroke="#374151" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- Footer notes -->
+  <text x="50" y="722" font-size="12" fill="#374151"><tspan font-weight="700">Idempotent:</tspan> re-running never creates duplicates (skip if already in Coda + upsert on Applicant ID).</text>
+  <text x="50" y="744" font-size="12" fill="#374151"><tspan font-weight="700">No-code changes:</tspan> edit config.yaml (rubric, weights, thresholds, columns), then re-run via "Run workflow".</text>
+  <text x="50" y="766" font-size="12" fill="#374151"><tspan font-weight="700">Secrets</tspan> live in .env locally and GitHub Actions secrets in CI, never in the repo.</text>
+</svg>

@@ -2,6 +2,8 @@
 
 Reads new applicants from a Google Sheet, scores each CV with an LLM (Groq) against a per-role rubric, and upserts one row per applicant into a Coda table. Runs daily via GitHub Actions.
 
+![Architecture](architecture.svg)
+
 ```
 GitHub Actions cron -> run.py -> Google Sheet (name,email,role,CV link)
    -> dedup (Coda: Applicant ID / email / CV hash) -> extractor (pdf/docx/doc/txt/image/OCR/gdoc)
