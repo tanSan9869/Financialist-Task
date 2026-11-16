@@ -21,6 +21,9 @@ GitHub Actions cron -> run.py -> Google Sheet (name,email,role,CV link)
 ## Daily run
 For each sheet row: skip if the Applicant ID (`sha256(email)[:12]`) or email is already in Coda, or the CV hash was seen; otherwise extract text, score, write. Failures (corrupt/empty file, OCR failure, unknown role, API error) are written with `Status=Failed` and an `Error Note`; the batch continues. Writes use `keyColumns: ["Applicant ID"]`, so they upsert and never duplicate. Failed rows are not retried automatically: delete the row in Coda to retry.
 
+## Re-scoring existing applicants
+Normally applicants already in Coda are skipped. To re-score everyone with the current `config.yaml` (e.g. after changing weights, thresholds or the prompt), run with `RESCORE=1` (locally: `$env:RESCORE=1; python run.py`) or, on GitHub, Actions -> Run workflow -> tick **rescore**. Existing rows are updated in place (upsert on Applicant ID), never duplicated.
+
 ## Where to edit the rubric
 Only `config.yaml`: roles, criteria, weights, `thresholds` (shortlist/maybe cutoffs), prompt template, sheet/Coda column names, model. The model scores skills/education/experience/projects; the **total is computed in code from your weights** and the **recommendation is derived in code from thresholds**.
 

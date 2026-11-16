@@ -23,6 +23,8 @@ def resolve_role(cfg, name):
 
 def main():
     cfg = load_config()
+    # RESCORE=1 -> re-score everyone, updating existing Coda rows in place (upsert on Applicant ID)
+    rescore = os.getenv("RESCORE", "").strip().lower() in ("1", "true", "yes")
     os.makedirs("logs", exist_ok=True)
     log_path = f"logs/run_{datetime.now(timezone.utc):%Y-%m-%d}.jsonl"
 
@@ -36,13 +38,13 @@ def main():
     applicants = read_applicants(cfg)
     cols = table_columns(cfg)
     existing = Existing(cfg)
-    print(f"{len(applicants)} sheet rows, {len(existing.ids)} already in Coda")
+    print(f"{len(applicants)} sheet rows, {len(existing.ids)} already in Coda" + (" | RESCORE mode ON" if rescore else ""))
     counts = {"Scored": 0, "Failed": 0, "Skipped": 0}
 
     for app in applicants:
         aid = applicant_id(app["email"], app["cv_link"])
         try:
-            if existing.seen_applicant(aid, app["email"]):
+            if not rescore and existing.seen_applicant(aid, app["email"]):
                 counts["Skipped"] += 1
                 log(aid, "Skipped", "already in Coda")
                 continue
@@ -61,7 +63,7 @@ def main():
                     continue
                 if not ex.ok:
                     error = ex.error
-                elif existing.seen_hash(cv_hash):
+                elif not rescore and existing.seen_hash(cv_hash):
                     counts["Skipped"] += 1
                     log(aid, "Skipped", "duplicate CV content (same hash)")
                     continue

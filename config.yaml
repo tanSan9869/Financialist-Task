@@ -1,5 +1,5 @@
 sheet:
-  url: "<google_sheet_url>"        # or set GOOGLE_SHEET_ID in env
+  url: "https://docs.google.com/spreadsheets/d/150S5AW0yE0cU8CTsWdtxCAJ5aQ9s5nNWN4RdK4ItlAU/edit?usp=sharing"        # or set GOOGLE_SHEET_ID in env
   worksheet: null                  # null = first tab
   columns:
     name: "Name"
