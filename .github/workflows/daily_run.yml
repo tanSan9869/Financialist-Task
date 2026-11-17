@@ -1,7 +1,7 @@
 name: Daily applicant scoring
 on:
   schedule:
-    - cron: "0 7 * * *"   # 07:00 UTC daily
+    - cron: "14 7 * * *"   # 07:00 UTC daily
   workflow_dispatch:       # manual trigger for demo / live change
     inputs:
       rescore:
